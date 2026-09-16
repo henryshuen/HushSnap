@@ -12,7 +12,7 @@
 <tr>
 <td align="left">
 
-HushSnap bridges screenshots and OCR into one fluid flow. Press a hotkey and a crosshair overlay appears instantly - select a region (or click for the full screen) and the shot lands on your clipboard right away. A thumbnail fades in at the bottom-right corner; left-click it and the recognized text pops up, already reformatted into a clean, readable layout you can edit on the spot. Everything runs locally - your screenshots and recognized text never leave your device. It lives quietly in the system tray, so there are no windows or menus to pre-launch: the UI surfaces only when you need it, then fades away.
+HushSnap is an opinionated screenshot tool first. Press a hotkey and a crosshair overlay appears instantly - select a region and the shot lands on your clipboard right away. A thumbnail fades in at the bottom-right corner; it is the hub for everything after: edit, pin, save, or on-demand OCR. Left-click it and the recognized text pops up, already reformatted into a clean, readable layout you can edit on the spot. Its deepest work is in OCR, but OCR is always on-demand via thumbnail click - it never overwrites your clipboard by design. Everything runs locally - your screenshots and recognized text never leave your device. It lives quietly in the system tray, so there are no windows or menus to pre-launch: the UI surfaces only when you need it, then fades away.
 
 [HushSnap Website](https://tcita.github.io/HushSnap/)
 
@@ -45,7 +45,7 @@ After capture, a thumbnail fades in at the bottom-right corner of your screen. T
 - **Edit** (the brush button on the action pill) opens the built-in **image editor** - see [Image Editor](#image-editor) below for the full toolset.
 - **Right-click** the thumbnail for **View Original** (open the capture in your default viewer), **Copy Image** to clipboard, or **Save to Desktop**.
 - Optionally overlay a decorative **vine ornament** on the thumbnail’s top-left corner (enable it in Settings - Capture). It is purely cosmetic; it does not change the thumbnail’s hit area or any behavior.
-- Enable **Background OCR Prefetch** in Settings to run OCR quietly after each capture so the thumbnail popup opens faster.
+- Enable **Background OCR Prefetch** in Settings to run OCR quietly after each capture so the thumbnail popup opens instantly. It only warms the cache and never touches your clipboard.
 
 
 ## Release Notes
