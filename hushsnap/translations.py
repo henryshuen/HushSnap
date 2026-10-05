@@ -106,7 +106,7 @@ UI_TEXT = {
         "ocr_cancel_btn": "Cancel",
         "cancel": "Cancel",
 
-        "thumbnail_save_to_desktop": "Save to Desktop",
+        "thumbnail_save_to_desktop": "Save to Screenshots",
         "thumbnail_open_in_viewer": "View Original",
         "pin_copy_image": "Copy Image",
         "pin_image_copied": "Image Copied!",
@@ -288,7 +288,7 @@ UI_TEXT = {
         "ocr_cancel_btn": "取消",
         "cancel": "取消",
 
-        "thumbnail_save_to_desktop": "保存到桌面",
+        "thumbnail_save_to_desktop": "保存到屏幕截图",
         "thumbnail_open_in_viewer": "查看原图",
         "pin_copy_image": "复制图片",
         "pin_image_copied": "图片已复制!",
@@ -470,7 +470,7 @@ UI_TEXT = {
         "ocr_cancel_btn": "取消",
         "cancel": "取消",
 
-        "thumbnail_save_to_desktop": "儲存到桌面",
+        "thumbnail_save_to_desktop": "儲存到螢幕擷取畫面",
         "thumbnail_open_in_viewer": "查看原圖",
         "pin_copy_image": "複製圖片",
         "pin_image_copied": "圖片已複製！",
@@ -652,7 +652,7 @@ UI_TEXT = {
         "ocr_cancel_btn": "キャンセル",
         "cancel": "キャンセル",
 
-        "thumbnail_save_to_desktop": "デスクトップに保存",
+        "thumbnail_save_to_desktop": "スクリーンショットに保存",
         "thumbnail_open_in_viewer": "元画像を表示",
         "pin_copy_image": "画像をコピー",
         "pin_image_copied": "画像をコピーしました！",

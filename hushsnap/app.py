@@ -498,21 +498,79 @@ class Application(QtCore.QObject):
         except Exception:
             self.logger.exception("Failed to copy image to clipboard")
 
+    def _get_windows_screenshots_folder(self):
+        """Return the Windows Screenshots known folder."""
+        import ctypes
+        from ctypes import wintypes
+        import uuid
+
+        folder_uuid = uuid.UUID("b7bede81-df94-4682-a7d8-57a52620b86f")
+
+        class GUID(ctypes.Structure):
+            _fields_ = [
+                ("Data1", wintypes.DWORD),
+                ("Data2", wintypes.WORD),
+                ("Data3", wintypes.WORD),
+                ("Data4", ctypes.c_ubyte * 8),
+            ]
+
+        guid = GUID(
+            folder_uuid.time_low,
+            folder_uuid.time_mid,
+            folder_uuid.time_hi_version,
+            (ctypes.c_ubyte * 8)(*folder_uuid.bytes[8:]),
+        )
+
+        path_ptr = ctypes.c_void_p()
+
+        shell32 = ctypes.windll.shell32
+        ole32 = ctypes.windll.ole32
+
+        shell32.SHGetKnownFolderPath.argtypes = [
+            ctypes.POINTER(GUID),
+            wintypes.DWORD,
+            wintypes.HANDLE,
+            ctypes.POINTER(ctypes.c_void_p),
+        ]
+
+        result = shell32.SHGetKnownFolderPath(
+            ctypes.byref(guid),
+            0,
+            None,
+            ctypes.byref(path_ptr),
+        )
+
+        if result == 0 and path_ptr.value:
+            try:
+                return Path(ctypes.wstring_at(path_ptr))
+            finally:
+                ole32.CoTaskMemFree(path_ptr)
+
+        return Path.home() / "Pictures" / "Screenshots"
+
+        # Fallback
+        return Path.home() / "Pictures" / "Screenshots"
+
+
     def _handle_save_to_desktop(self, pil_img):
         try:
-            desktop = Path.home() / "Desktop"
+            save_dir = self._get_windows_screenshots_folder()
+            save_dir.mkdir(parents=True, exist_ok=True)
+
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             ms = int(time.time() * 1000) % 1000
             base = f"HushSnap_{timestamp}_{ms:03d}"
-            file_path = desktop / f"{base}.png"
+
+            file_path = save_dir / f"{base}.png"
             counter = 1
             while file_path.exists():
-                file_path = desktop / f"{base}({counter}).png"
+                file_path = save_dir / f"{base}({counter}).png"
                 counter += 1
+
             pil_img.save(file_path)
             show_toast(self.translate("pin_saved_to_desktop"))
         except Exception:
-            self.logger.exception("Failed to save image to desktop")
+            self.logger.exception("Failed to save screenshot")
 
     def _handle_open_in_viewer(self, pil_img):
         """Open the capture in the system's default image viewer via a temp file.
