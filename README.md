@@ -69,6 +69,8 @@ You can change the location from:
 
 **Settings → General → Image Save Location**
 
+<img src="assets/image-save-location.png" alt="HushSnap Image Save Location setting" width="720">
+
 The selected folder is shared by:
 - Thumbnail **Save Image**
 - Pinned-image **Save Image**
