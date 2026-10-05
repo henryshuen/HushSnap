@@ -26,6 +26,9 @@ from ..config import (
     update_thumbnail_frame,
     get_hide_thumbnail,
     update_hide_thumbnail,
+    get_image_save_path,
+    get_image_save_dir,
+    update_image_save_path,
 )
 from ..constants import MOD_ALT, MOD_CONTROL, MOD_SHIFT, MOD_WIN
 from ..system import startup_manager
@@ -482,6 +485,83 @@ def _make_setting_card(label_text, subtitle_text, hotkey_text, button_text):
 
     return card, pills_container, pills, btn
 
+def _make_path_card(
+    label_text,
+    subtitle_text,
+    path_text,
+    change_text,
+    default_text,
+):
+    """Build compact image save-location card."""
+
+    card = QtWidgets.QFrame()
+    card.setObjectName("settingCard")
+    card.setStyleSheet(SETTING_CARD_STYLE)
+
+    card_layout = QtWidgets.QVBoxLayout(card)
+    card_layout.setContentsMargins(14, 10, 14, 10)
+    card_layout.setSpacing(4)
+
+    # Top row: title + buttons
+    top_row = QtWidgets.QWidget()
+    top_row.setStyleSheet("background: transparent; border: none;")
+    top_row.setMinimumHeight(30)
+
+    top_layout = QtWidgets.QHBoxLayout(top_row)
+    top_layout.setContentsMargins(0, 0, 0, 0)
+    top_layout.setSpacing(8)
+
+    label = QtWidgets.QLabel(label_text)
+    label.setObjectName("rowLabel")
+    label.setStyleSheet(ROW_LABEL_STYLE)
+    label.setMinimumHeight(28)
+
+    top_layout.addWidget(
+        label,
+        alignment=QtCore.Qt.AlignmentFlag.AlignVCenter,
+    )
+    top_layout.addStretch()
+
+    change_btn = _make_ghost_button(change_text)
+    default_btn = _make_ghost_button(default_text)
+
+    top_layout.addWidget(change_btn)
+    top_layout.addWidget(default_btn)
+
+    card_layout.addWidget(top_row)
+
+    # Current save path
+    path_edit = QtWidgets.QLineEdit(path_text)
+    path_edit.setReadOnly(True)
+    path_edit.setCursorPosition(0)
+
+    path_edit.setStyleSheet(
+        """
+        QLineEdit {
+            background: #F3F3F3;
+            border: 1px solid #E2E2E2;
+            border-radius: 6px;
+            padding: 4px 9px;
+            font-size: 14px;
+            color: #444444;
+        }
+        """
+    )
+
+    path_edit.setMinimumHeight(32)
+    path_edit.setMaximumHeight(34)
+
+    card_layout.addWidget(path_edit)
+
+    # Description
+    subtitle = QtWidgets.QLabel(subtitle_text)
+    subtitle.setObjectName("subtitle")
+    subtitle.setStyleSheet(SUBTITLE_STYLE)
+    subtitle.setWordWrap(True)
+
+    card_layout.addWidget(subtitle)
+
+    return card, path_edit, change_btn, default_btn
 
 def _make_language_card(label_text, subtitle_text, current_lang, languages_options):
     """Build language setting card: label + subtitle on left, dropdown on right.
@@ -1239,6 +1319,57 @@ class SettingsDialogController(QtCore.QObject):
         )
         switch_start.clicked.connect(on_startup_toggled)
         general_layout.addWidget(card_start)
+
+        # Image Save Location
+        def refresh_image_save_path():
+            path_edit.setText(str(get_image_save_dir(self.config_path)))
+            path_edit.setCursorPosition(0)
+
+            # Reset only makes sense when a custom path is active.
+            default_btn.setEnabled(
+                bool(get_image_save_path(self.config_path))
+            )
+
+
+        def change_image_save_path():
+            selected = QtWidgets.QFileDialog.getExistingDirectory(
+                dialog,
+                self.translate("settings_image_save_dialog"),
+                str(get_image_save_dir(self.config_path)),
+            )
+
+            if selected:
+                update_image_save_path(
+                    selected,
+                    self.config_path,
+                )
+                refresh_image_save_path()
+
+
+        def reset_image_save_path():
+            update_image_save_path(
+                "",
+                self.config_path,
+            )
+            refresh_image_save_path()
+
+
+        card_path, path_edit, change_btn, default_btn = _make_path_card(
+            self.translate("settings_image_save_label"),
+            self.translate("settings_image_save_subtitle"),
+            str(get_image_save_dir(self.config_path)),
+            self.translate("settings_image_save_change"),
+            self.translate("settings_image_save_default"),
+        )
+
+        change_btn.clicked.connect(change_image_save_path)
+        default_btn.clicked.connect(reset_image_save_path)
+
+        default_btn.setEnabled(
+            bool(get_image_save_path(self.config_path))
+        )
+
+        general_layout.addWidget(card_path)
 
         # Hotkey
         def change_hotkey():

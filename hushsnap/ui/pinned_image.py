@@ -416,7 +416,12 @@ class PinnedImageWindow(QtWidgets.QWidget):
         painter.drawRoundedRect(QtCore.QRectF(content_rect).adjusted(0.5, 0.5, -0.5, -0.5), self.border_radius, self.border_radius)
 
     def _show_context_menu(self, pos):
-        from ..config import resolve_ui_lang, ui_text, get_config_path
+        from ..config import (
+            resolve_ui_lang,
+            ui_text,
+            get_config_path,
+            get_image_save_dir,
+        )
         lang = resolve_ui_lang(get_config_path())
         from .styles import RoundedMenu, apply_menu_shadow
         menu = RoundedMenu(self)
@@ -435,17 +440,26 @@ class PinnedImageWindow(QtWidgets.QWidget):
             show_toast(ui_text(lang, "pin_image_copied"))
         elif action == desktop_action:
             try:
-                desktop = Path.home() / "Desktop"
-                timestamp = QtCore.QDateTime.currentDateTime().toString('yyyyMMdd_HHmmss_zzz')
+                save_dir = get_image_save_dir(get_config_path())
+                save_dir.mkdir(parents=True, exist_ok=True)
+
+                timestamp = QtCore.QDateTime.currentDateTime().toString(
+                    "yyyyMMdd_HHmmss_zzz"
+                )
                 base = f"HushSnap_{timestamp}"
-                file_path = desktop / f"{base}.png"
+
+                file_path = save_dir / f"{base}.png"
                 counter = 1
+
                 while file_path.exists():
-                    file_path = desktop / f"{base}({counter}).png"
+                    file_path = save_dir / f"{base}({counter}).png"
                     counter += 1
+
                 self.pil_image.save(file_path)
                 show_toast(ui_text(lang, "pin_saved_to_desktop"))
-            except Exception: logger.exception("Failed to save pinned image to desktop")
+
+            except Exception:
+                logger.exception("Failed to save pinned image")
 
 class PinnedImageManager(QtCore.QObject):
     """Manages multiple pinned image windows."""

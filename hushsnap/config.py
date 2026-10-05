@@ -10,6 +10,7 @@ import logging
 import tomllib
 from ctypes import wintypes
 from pathlib import Path
+import uuid
 
 from .constants import (
     APP_CONFIG_FILENAME,
@@ -80,6 +81,7 @@ _CONFIG_DEFAULTS = {
     "auto_ocr_after_capture": False,
     "hide_thumbnail": False,
     "auto_ocr_show_toast": True,
+    "image_save_path": "",
 }
 
 # Schema version of the on-disk config file. Bump on any breaking change to
@@ -294,7 +296,7 @@ def _ensure_default_config_exists(config_path):
 
             # Repair string-typed keys that are present but empty.
             for key, default_val in _CONFIG_DEFAULTS.items():
-                if key in config_data and isinstance(default_val, str):
+                if key in config_data and isinstance(default_val, str) and default_val.strip():
                     current = config_data.get(key)
                     if not isinstance(current, str) or not current.strip():
                         config_data[key] = default_val
@@ -677,6 +679,85 @@ def update_auto_ocr_after_capture(enabled, config_path=None):
         _write_config_data(config_path, config_data)
     except Exception as e:
         logger.error(f"Failed to update auto_ocr_after_capture: {e}")
+
+
+def get_image_save_path(config_path=None):
+    """Return custom image save path. Empty string means Windows default."""
+    if config_path is None:
+        config_path = get_config_path()
+    data = _load_config_data(config_path)
+    value = data.get("image_save_path", "")
+    return value.strip() if isinstance(value, str) else ""
+
+
+def update_image_save_path(path, config_path=None):
+    """Update and persist the custom image save path."""
+    if config_path is None:
+        config_path = get_config_path()
+
+    data = _load_config_data(config_path)
+    data["image_save_path"] = str(path).strip()
+
+    try:
+        _write_config_data(config_path, data)
+    except Exception as e:
+        logger.error(f"Failed to update image_save_path: {e}")
+
+
+def _get_windows_screenshots_folder():
+    """Return the Windows Screenshots known folder."""
+    folder_uuid = uuid.UUID("b7bede81-df94-4682-a7d8-57a52620b86f")
+
+    class GUID(ctypes.Structure):
+        _fields_ = [
+            ("Data1", wintypes.DWORD),
+            ("Data2", wintypes.WORD),
+            ("Data3", wintypes.WORD),
+            ("Data4", ctypes.c_ubyte * 8),
+        ]
+
+    guid = GUID(
+        folder_uuid.time_low,
+        folder_uuid.time_mid,
+        folder_uuid.time_hi_version,
+        (ctypes.c_ubyte * 8)(*folder_uuid.bytes[8:]),
+    )
+
+    path_ptr = ctypes.c_void_p()
+    shell32 = ctypes.windll.shell32
+    ole32 = ctypes.windll.ole32
+
+    shell32.SHGetKnownFolderPath.argtypes = [
+        ctypes.POINTER(GUID),
+        wintypes.DWORD,
+        wintypes.HANDLE,
+        ctypes.POINTER(ctypes.c_void_p),
+    ]
+
+    result = shell32.SHGetKnownFolderPath(
+        ctypes.byref(guid),
+        0,
+        None,
+        ctypes.byref(path_ptr),
+    )
+
+    if result == 0 and path_ptr.value:
+        try:
+            return Path(ctypes.wstring_at(path_ptr))
+        finally:
+            ole32.CoTaskMemFree(path_ptr)
+
+    return Path.home() / "Pictures" / "Screenshots"
+
+
+def get_image_save_dir(config_path=None):
+    """Return the effective directory used for screenshot saving."""
+    custom = get_image_save_path(config_path)
+
+    if custom:
+        return Path(os.path.expandvars(custom)).expanduser()
+
+    return _get_windows_screenshots_folder()
 
 
 def get_hide_thumbnail(config_path=None):
