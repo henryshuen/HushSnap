@@ -1,24 +1,38 @@
 <div align="center">
   <img src="assets/logo.png" alt="HushSnap" width="120">
   <h1>HushSnap</h1>
-  <a href="https://apps.microsoft.com/detail/9p0qzv5z8njz">
-    <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Download from the Microsoft Store" width="200">
-  </a>
 </div>
 
-<br><br>
+> [!IMPORTANT]
+> **Unofficial modified build based on HushSnap v1.6.2 by [tcita](https://github.com/tcita/HushSnap).**
+>
+> This branch intentionally remains based on **v1.6.2** because that release includes **Auto OCR After Capture**.  
+> Auto OCR is an existing upstream v1.6.2 feature and is **not introduced by this fork**.
+>
+> Changes in this fork:
+> - Uses the Windows **Screenshots** known folder as the default image save location.
+> - Adds a configurable **Image Save Location** in Settings.
+> - Uses the selected save location for both thumbnail saving and pinned-image saving.
+> - Updates save-related UI text for English, Simplified Chinese, Traditional Chinese, and Japanese.
+> - Adds a conventional Windows installer using **Inno Setup**.
+>
+> Licensed under **GPL-3.0**, consistent with the upstream project.
+
+### Upstream project
+
+- [Original HushSnap repository](https://github.com/tcita/HushSnap)
+- [HushSnap Website](https://tcita.github.io/HushSnap/)
+- [Microsoft Store (official upstream build)](https://apps.microsoft.com/detail/9p0qzv5z8njz)
+- [Demo Video](https://youtu.be/untWW6_Ea3M)
+- [爱发电 / Support upstream](https://afdian.com/a/tcita)
+
+<br>
 
 <table align="center" width="600">
 <tr>
 <td align="left">
 
 HushSnap bridges screenshots and OCR into one fluid flow. Press a hotkey and a crosshair overlay appears instantly - select a region (or click for the full screen) and the shot lands on your clipboard right away. A thumbnail fades in at the bottom-right corner; left-click it and the recognized text pops up, already reformatted into a clean, readable layout you can edit on the spot. Everything runs locally - your screenshots and recognized text never leave your device. It lives quietly in the system tray, so there are no windows or menus to pre-launch: the UI surfaces only when you need it, then fades away.
-
-[HushSnap Website](https://tcita.github.io/HushSnap/)
-
-[Demo Video](https://youtu.be/untWW6_Ea3M)
-
-[爱发电 (Support)](https://afdian.com/a/tcita)
 
 </td>
 </tr>
@@ -43,15 +57,29 @@ After capture, a thumbnail fades in at the bottom-right corner of your screen. T
 - **Drag and drop** the thumbnail anywhere to save the image - into a chat, an email, a folder, or another app.
 - **Left-click** the thumbnail to run **OCR**. Recognized text opens in a floating popup where you can edit, copy, resize, or pin the window to keep it visible. By default the text is also auto-copied to your clipboard.
 - **Edit** (the brush button on the action pill) opens the built-in **image editor** - see [Image Editor](#image-editor) below for the full toolset.
-- **Right-click** the thumbnail for **Copy Text from Image** (silent OCR - text straight to the clipboard, no popup) or **Save to Desktop**.
+- **Right-click** the thumbnail for **Copy Text from Image** (silent OCR - text straight to the clipboard, no popup) or **Save Image**.
 - Optionally overlay a decorative **vine ornament** on the thumbnail’s top-left corner (enable it in Settings - Capture). It is purely cosmetic; it does not change the thumbnail’s hit area or any behavior.
 - Enable **Auto OCR After Capture** in Settings to have text recognized and copied to the clipboard automatically right after capture — no thumbnail click needed.
 
+## Fork-specific save behavior
+
+By default, this fork saves screenshots to the Windows **Screenshots** known folder rather than Desktop.
+
+You can change the location from:
+
+**Settings → General → Image Save Location**
+
+The selected folder is shared by:
+- Thumbnail **Save Image**
+- Pinned-image **Save Image**
+
+Choosing **Use Default** returns to the Windows Screenshots known folder.
 
 ## Release Notes
 
-See [**what's new.txt**](what's%20new.txt) for the full changelog (Simplified Chinese, Traditional Chinese, English, Japanese — newest first).
+See [**what's new.txt**](what's%20new.txt) for the upstream changelog (Simplified Chinese, Traditional Chinese, English, Japanese — newest first).
 
+Fork-specific changes are documented in this README and in the Git history for the `auto-ocr-v1.6.2` branch.
 
 As the project continues to evolve, some parts of this README may occasionally lag behind the latest behavior or features.
 
@@ -60,7 +88,6 @@ As the project continues to evolve, some parts of this README may occasionally l
 The built-in image editor opens from the thumbnail's **Edit** button, or from the right-click menu on a pinned image. It's a lightweight, dark-themed window for touching up a capture before sharing - annotate, redact, crop, rotate, resize, then copy to clipboard or save. The window opens centered on the cursor's screen and remembers its size across sessions.
 
 **Tools:** rectangle / ellipse / line (color, size, fill, optional arrowhead), text (font, size, color), brush, highlighter, mosaic (pixelate/redact), eraser, pan, and the crop / rotate / resize transforms. Plus undo/redo (`Ctrl+Z` / `Ctrl+Y`), fit-to-viewport (`Ctrl+0`), copy, and Save As… (`Ctrl+S`, PNG / JPEG / BMP). Transforms run as atomic sessions - **Esc** cancels - so the state stays unambiguous mid-edit.
-
 
 ## OCR Engine
 
@@ -96,6 +123,8 @@ HushSnap is distributed under the **GNU General Public License v3.0**
 ([LICENSE.md](LICENSE.md)). See `THIRD_PARTY_NOTICES.md` for third-party
 attribution.
 
+This fork preserves the upstream GPL-3.0 license and clearly marks its modifications.
+
 Copyright © 2026 HushSnap.
 
 ## Development & Debugging
@@ -126,7 +155,31 @@ To enable debug mode, set `debug = true` in `hushsnap_config.toml` (the `--debug
   - Packaged run (MSIX): `%LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\`
   - Packaged run (PyInstaller standalone): `%LOCALAPPDATA%\HushSnap\`
 
-## Building (MSIX)
+## Building this fork (Windows EXE installer)
+
+This fork includes an Inno Setup script at:
+
+```text
+installer/installer_custom.iss
+```
+
+Build the PyInstaller application first so the following directory exists:
+
+```text
+dist/HushSnap/
+```
+
+Then compile `installer/installer_custom.iss` with Inno Setup. The installer output is written to:
+
+```text
+dist-installer-exe/HushSnap-1.6.2-AutoOCR-Setup.exe
+```
+
+The installer is currently unsigned, so Windows SmartScreen may display a warning on first launch or installation.
+
+## Building upstream-style MSIX
+
+The upstream MSIX build workflow is still present:
 
 ```powershell
 build_msix.bat              # build unsigned MSIX; version auto-resolved from git tag
@@ -135,13 +188,24 @@ sign_for_local_test.bat     # self-sign the package for local install testing
 
 The build requires HEAD at a git tag (e.g. `v0.3.0`). For local testing, `sign_for_local_test.bat` auto-creates a self-signed certificate and trusts it - run as Administrator.
 
-Every release is tagged in git — `git checkout v1.5.4`, run `build_msix.bat`, then `sign_for_local_test.bat` to produce a locally-installable MSIX for that version.
-
-Release notes (four languages, newest first) are in [`what's new.txt`](what's%20new.txt). 
+Release notes (four languages, newest first) are in [`what's new.txt`](what's%20new.txt).
 
 ---
 
 ## Installation
 
-HushSnap is distributed exclusively through the [Microsoft Store](https://apps.microsoft.com/detail/9p0qzv5z8njz).
+### This fork
 
+Download the latest installer from the **Releases** page of this fork and run:
+
+```text
+HushSnap-1.6.2-AutoOCR-Setup.exe
+```
+
+No Python or Conda installation is required for the packaged build.
+
+Because the installer is unsigned, Windows SmartScreen may warn that the publisher is unknown.
+
+### Official upstream build
+
+For the official upstream version, use the [Microsoft Store](https://apps.microsoft.com/detail/9p0qzv5z8njz) or visit the [upstream repository](https://github.com/tcita/HushSnap).
